@@ -44,7 +44,7 @@ type pathResult struct {
 
 func isSimpleChar(ch byte) bool {
 	switch ch {
-	case '|', '#', '@', '*', '?':
+	case '|', '@', '*', '?':
 		return false
 	default:
 		return true
@@ -103,6 +103,21 @@ func parsePath(path string) (res pathResult, simple bool) {
 			// append the last part
 			r.part = string(epart)
 			r.gpart = string(gpart)
+			return r, true
+		}
+
+		if path[i] == '#' {
+			if path == "#" {
+				return r, false
+			}
+
+			// Only one # is supported
+
+			r.part = path[i:]
+			r.gpart = path[i:]
+			r.path = ""
+			r.more = false
+
 			return r, true
 		}
 	}
@@ -427,19 +442,18 @@ func isOptimisticPath(path string) bool {
 //
 // A path is a series of keys separated by a dot.
 //
-//  {
-//    "name": {"first": "Tom", "last": "Anderson"},
-//    "age":37,
-//    "children": ["Sara","Alex","Jack"],
-//    "friends": [
-//      {"first": "James", "last": "Murphy"},
-//      {"first": "Roger", "last": "Craig"}
-//    ]
-//  }
-//  "name.last"          >> "Anderson"
-//  "age"                >> 37
-//  "children.1"         >> "Alex"
-//
+//	{
+//	  "name": {"first": "Tom", "last": "Anderson"},
+//	  "age":37,
+//	  "children": ["Sara","Alex","Jack"],
+//	  "friends": [
+//	    {"first": "James", "last": "Murphy"},
+//	    {"first": "Roger", "last": "Craig"}
+//	  ]
+//	}
+//	"name.last"          >> "Anderson"
+//	"age"                >> 37
+//	"children.1"         >> "Alex"
 func Set(json, path string, value interface{}) (string, error) {
 	return SetOptions(json, path, value, nil)
 }
